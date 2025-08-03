@@ -277,12 +277,31 @@ function SORTposthook (data)
   for _, v in ipairs(data) do
     v.Entry = v.origEntry
     v.origEntry = nil
+    v.SortKey = nil
   end
 
   return data
 end
 
+local jamo_to_cjamo = {
+  [0x1100] = 0x3131, [0x1102] = 0x3134, [0x1103] = 0x3137, [0x1105] = 0x3139,
+  [0x1106] = 0x3141, [0x1107] = 0x3142, [0x1109] = 0x3145, [0x110B] = 0x3147,
+  [0x110C] = 0x3148, [0x110E] = 0x314A, [0x110F] = 0x314B, [0x1110] = 0x314C,
+  [0x1111] = 0x314D, [0x1112] = 0x314E, [0x1161] = 0x314F,
+}
+
+local function conv_sortchar (data)
+  for _, v in ipairs(data) do
+    local cjamo = jamo_to_cjamo[ utf8.codepoint(v.sortChar) ]
+    if cjamo then
+      v.sortChar = utf8.char( cjamo )
+    end
+  end
+end
+
 function SORTendhook (data) -- symbol-number-hangul-english order
+  conv_sortchar(data)
+
   local en_begin, ko_begin
 
   for i, v in ipairs(data) do
@@ -306,6 +325,8 @@ function SORTendhook (data) -- symbol-number-hangul-english order
 end
 
 function SORTendhook_HESN (data) -- hangul-english-symbol-number order
+  conv_sortchar(data)
+
   local en_begin, ko_begin
 
   for i, v in ipairs(data) do
@@ -335,6 +356,8 @@ function SORTendhook_HESN (data) -- hangul-english-symbol-number order
 end
 
 function SORTendhook_HENS (data) -- hangul-english-number-symbol order
+  conv_sortchar(data)
+
   local en_begin, ko_begin, nu_begin
 
   for i, v in ipairs(data) do
@@ -374,7 +397,6 @@ indexheader.ko = { "기호", "숫자" }
 -- load xindex-cfg.lua; change some global variables
 --]]
 
-use_UCA = false
 require"xindex-cfg-no_uca"
 
 fCompress   = false

@@ -5,7 +5,7 @@ Korean language module for xindex package
 
 *    reference: KS X 1026-1:2007
 
-*    usage: xindex -c ko -l ko file.idx
+*    usage: `xindex -c ko -l ko file.idx`
 
 *    license: LPPL
 
