@@ -294,98 +294,82 @@ local function conv_sortchar (data)
   end
 end
 
-function SORTendhook_SNHE (data) -- symbol-number-hangul-english order
+function SORTendhook_DFLT (data)
   conv_sortchar(data)
+  return data
+end
 
-  local en_begin, ko_begin
+SORTendhook = SORTendhook_DFLT
 
-  for i, v in ipairs(data) do
-    if not en_begin and string.find(v.sortChar, "%a") then
-      en_begin = i
-    elseif utf8.codepoint(v.sortChar) >= LBase then
-      ko_begin = i
-      break
+local function get_four_tables(data)
+  local symbols, numbers, letters, hanguls = {}, {}, {}, {}
+
+  for _, v in ipairs(data) do
+    local chr = v.sortChar or v.SortKey
+    if utf8.codepoint(chr) >= LBase then
+      table.insert(hanguls, v)
+    else
+      local t = getCharType(chr)
+      if t == 0 then
+        table.insert(symbols, v)
+      elseif t == 1 then
+        table.insert(numbers, v)
+      elseif t == 2 then
+        table.insert(letters, v)
+      end
     end
   end
 
-  if en_begin and ko_begin then
-    local t = {}
-    table.move(data, 1,        en_begin-1, #t+1, t)
-    table.move(data, ko_begin, #data,      #t+1, t)
-    table.move(data, en_begin, ko_begin-1, #t+1, t)
-    return t
-  end
+  return symbols, numbers, letters, hanguls
+end
 
-  return data
+function SORTendhook_SNEH (data) -- symbol-number-english-hangul order
+  conv_sortchar(data)
+
+  local symbols, numbers, letters, hanguls = get_four_tables(data)
+
+  local t = { }
+  for _, v in ipairs{symbols, numbers, letters, hanguls} do
+    for _, vv in ipairs(v) do
+      table.insert(t, vv)
+    end
+  end
+  return t
 end
 
 function SORTendhook_HESN (data) -- hangul-english-symbol-number order
   conv_sortchar(data)
 
-  local en_begin, ko_begin
+  local symbols, numbers, letters, hanguls = get_four_tables(data)
 
-  for i, v in ipairs(data) do
-    if not en_begin and string.find(v.sortChar, "%a") then
-      en_begin = i
-    elseif utf8.codepoint(v.sortChar) >= LBase then
-      ko_begin = i
-      break
+  local item = letters[#letters]
+  item.Macro = (item.Macro or "") .. "\n\\indexspace"
+
+  local t = { }
+  for _, v in ipairs{hanguls, letters, symbols, numbers} do
+    for _, vv in ipairs(v) do
+      table.insert(t, vv)
     end
   end
-
-  en_begin = en_begin or ko_begin
-
-  if ko_begin then
-    local t = {}
-    table.move(data, ko_begin, #data,      #t+1, t)
-    table.move(data, en_begin, ko_begin-1, #t+1, t)
-    if data[1].sortChar == " " then
-      local macro = t[#t].Macro or ""
-      t[#t].Macro = macro .. "\n\\indexspace"
-    end
-    table.move(data, 1,        en_begin-1, #t+1, t)
-    return t
-  end
-
-  return data
+  return t
 end
 
 function SORTendhook_HENS (data) -- hangul-english-number-symbol order
   conv_sortchar(data)
 
-  local en_begin, ko_begin, nu_begin
+  local symbols, numbers, letters, hanguls = get_four_tables(data)
 
-  for i, v in ipairs(data) do
-    if not nu_begin and string.find(v.sortChar, "%d") then
-      nu_begin = i
-    elseif not en_begin and string.find(v.sortChar, "%a") then
-      en_begin = i
-    elseif utf8.codepoint(v.sortChar) >= LBase then
-      ko_begin = i
-      break
+  local item = numbers[#numbers]
+  item.Macro = (item.Macro or "") .. "\n\\indexspace"
+
+  local t = { }
+  for _, v in ipairs{hanguls, letters, numbers, symbols} do
+    for _, vv in ipairs(v) do
+      table.insert(t, vv)
     end
   end
-
-  en_begin = en_begin or ko_begin
-  nu_begin = nu_begin or en_begin
-
-  if ko_begin then
-    local t = {}
-    table.move(data, ko_begin, #data,      #t+1, t)
-    table.move(data, en_begin, ko_begin-1, #t+1, t)
-    table.move(data, nu_begin, en_begin-1, #t+1, t)
-    if data[1].sortChar == " " then
-      local macro = t[#t].Macro or ""
-      t[#t].Macro = macro .. "\n\\indexspace"
-    end
-    table.move(data, 1,        nu_begin-1, #t+1, t)
-    return t
-  end
-
-  return data
+  return t
 end
-
-SORTendhook = SORTendhook_SNHE
 
 local indexheader = indexheader or {}
 indexheader.ko = { "기호", "숫자", "korean" }
