@@ -323,6 +323,20 @@ local function get_four_tables(data)
   return symbols, numbers, letters, hanguls
 end
 
+function SORTendhook_SNHE (data) -- symbol-number-hangul-english order
+  conv_sortchar(data)
+
+  local symbols, numbers, letters, hanguls = get_four_tables(data)
+
+  local t = { }
+  for _, v in ipairs{symbols, numbers, hanguls, letters} do
+    for _, vv in ipairs(v) do
+      table.insert(t, vv)
+    end
+  end
+  return t
+end
+
 function SORTendhook_SNEH (data) -- symbol-number-english-hangul order
   conv_sortchar(data)
 
