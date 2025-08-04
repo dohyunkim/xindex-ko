@@ -356,9 +356,11 @@ function SORTendhook_HESN (data) -- hangul-english-symbol-number order
 
   local symbols, numbers, letters, hanguls = get_four_tables(data)
 
-  local item = #letters > 0 and letters[#letters]
-              or hanguls[#hanguls]
-  item.Macro = (item.Macro or "") .. "\n\\indexspace"
+  if #symbols > 0 then
+    local item = #letters > 0 and letters[#letters]
+                or hanguls[#hanguls]
+    item.Macro = (item.Macro or "") .. "\n\\indexspace"
+  end
 
   local t = { }
   for _, v in ipairs{hanguls, letters, symbols, numbers} do
@@ -374,10 +376,12 @@ function SORTendhook_HENS (data) -- hangul-english-number-symbol order
 
   local symbols, numbers, letters, hanguls = get_four_tables(data)
 
-  local item = #numbers > 0 and numbers[#numbers]
-              or #letters > 0 and letters[#letters]
-              or hanguls[#hanguls]
-  item.Macro = (item.Macro or "") .. "\n\\indexspace"
+  if #symbols > 0 then
+    local item = #numbers > 0 and numbers[#numbers]
+                or #letters > 0 and letters[#letters]
+                or hanguls[#hanguls]
+    item.Macro = (item.Macro or "") .. "\n\\indexspace"
+  end
 
   local t = { }
   for _, v in ipairs{hanguls, letters, numbers, symbols} do
