@@ -395,11 +395,5 @@ end
 local indexheader = indexheader or {}
 indexheader.ko = { "기호", "숫자", "korean" }
 
---[[
--- load xindex-cfg.lua; change some global variables
---]]
-
-require"xindex-cfg-no_uca"
-
 fCompress   = false
 sublabels   = {"", "", "", ""}
