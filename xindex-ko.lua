@@ -396,4 +396,5 @@ local indexheader = indexheader or {}
 indexheader.ko = { "기호", "숫자", "korean" }
 
 fCompress   = false
+minCompress = 2
 sublabels   = {"", "", "", ""}
